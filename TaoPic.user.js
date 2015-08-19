@@ -2,7 +2,11 @@
 // @name        TaoPic
 // @namespace   rc
 // @include     http://detail.tmall.com/*
+// @include     https://detail.tmall.com/*
 // @include     http://item.taobao.com/*
+// @include     https://item.taobao.com/*
+// @include			http://detail.1688.com/*
+// @include			https://detail.1688.com/*
 // @grant		GM_xmlhttpRequest
 // @grant		GM_registerMenuCommand
 // @grant		GM_addStyle
@@ -15,14 +19,16 @@ function getTaoPics(){
 	console.log("Start 'getTaoPics'");
     if(window.location.host=='detail.tmall.com'){
  	var subject = $('body').text();
-    }
+    } else if(window.location.host=='detail.1688.com') {
+			var subject = $('body').html();
+		}
         else {
 	    var subject = $('head').text();
 	    }
-	var myregexp = /http:\/\/dsc\.taobaocdn\.com\/([^'|"]+)/i;
-	var match = myregexp.exec(subject);
+	var myregexp = /dsc\.taobaocdn\.com\/([^'|"]+)/i;
+	var match = myregexp.exec(subject); 
 	if (match != null) {
-
+		match[0] = "http://"+match[0];
 		console.log(match[0]);
 
         GM_addStyle("body { background: none repeat scroll 0 0 black !important }");
@@ -60,9 +66,10 @@ function getTaoPics(){
 		}
 
 		GM_xmlhttpRequest({ method: "GET", url: match[0], onload: function(desc) {
-            $('body').append('<div id="desc" style="display: none">'+desc.responseText+'</div>');
+            $('body').append('<div id="desc" style="display: none">'+desc.responseText+'</div><div id="header"></div>');
+			
 
-			$('#desc img').each(function(indx, element){
+			$('#desc :not(a)>img').each(function(indx, element){
 				//var src = $(element).attr('src');
                 $('#header').append('<img class="selectable selected" src="'+$(element).attr('src')+'" />');
 			});
