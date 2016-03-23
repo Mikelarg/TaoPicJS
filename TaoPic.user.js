@@ -17,19 +17,19 @@
 function getTaoPics(){
 
 	console.log("Start 'getTaoPics'");
+    var url = null;
+    var myregexp = /dsc\.taobaocdn\.com\/([^'|"]+)/i;
     if(window.location.host=='detail.tmall.com'){
- 	var subject = $('body').text();
+        var subject = $('body').text();
+        url = "http://" + myregexp.exec(subject)
     } else if(window.location.host=='detail.1688.com') {
-			var subject = $('body').html();
-		}
-        else {
-	    var subject = $('head').text();
-	    }
-	var myregexp = /dsc\.taobaocdn\.com\/([^'|"]+)/i;
-	var match = myregexp.exec(subject); 
-	if (match != null) {
-		match[0] = "http://"+match[0];
-		console.log(match[0]);
+        url = $('#desc-lazyload-container').attr('data-tfs-url');
+    } else {
+        var subject = $('body').html();
+        url = "http://" + myregexp.exec(subject)
+	}
+	if (url != null) {
+		console.log(url);
 
         GM_addStyle("body { background: none repeat scroll 0 0 black !important }");
         GM_addStyle("#header { text-align: center; height: 100% !important; background: none repeat scroll 0 0 black !important }");
@@ -56,56 +56,94 @@ function getTaoPics(){
 
 		var script=document.createElement('script');
 		script.async = false;
-		script.src=match[0];
-        script.type="text/javascript";
-                if(window.location.host=='detail.tmall.com'){
-                document.getElementsByTagName('body')[0].appendChild(script);
-                }
-                else {
-		document.getElementsByTagName('head')[0].appendChild(script);
+		script.src = url;
+        script.type = "text/javascript";
+        if (window.location.host == 'detail.1688.com') {
+            script.onload = function () {
+                $('body').append('<div id="desc" style="display: none">'+offer_details.content+'</div><div id="header"></div>');
+
+
+                $('#desc :not(a)>img').each(function(indx, element){
+                    //var src = $(element).attr('src');
+                    $('#header').append('<img class="selectable selected" src="'+$(element).attr('src')+'" />');
+                });
+
+                $('#header').prevAll().remove();
+                $('#header').nextAll().remove();
+
+                // берем все необходимые нам картинки
+                var $img = $('#header img');
+
+                // ждем загрузки картинки браузером
+                $img.load(function(){
+                    console.log("$img.load: "+$(this).attr('src'));
+                    // удаляем атрибуты width и height
+                    $(this).removeAttr("width")
+                        .removeAttr("height")
+                        .css({ width: "", height: "" });
+
+                    // получаем заветные цифры
+                    var width  = $(this).width();
+                    var height = $(this).height();
+                    if(width>50 && height>100){
+                        // если картинка шире 450 и выше 250 пикселей, то используем ее
+                    } else $(this).remove();
+                });
+
+                $('#header').append('<br /><textarea id="imgs" rows="20" cols="150"></textarea>');
+                $('img:first').click();
+            };
+        }
+
+        if(window.location.host=='detail.tmall.com'){
+            document.getElementsByTagName('body')[0].appendChild(script);
+        } else {
+            document.getElementsByTagName('head')[0].appendChild(script);
 		}
+        if (window.location.host != 'detail.1688.com') {
+            GM_xmlhttpRequest({ method: "GET", url: url, onload: function(desc) {
 
-		GM_xmlhttpRequest({ method: "GET", url: match[0], onload: function(desc) {
-            $('body').append('<div id="desc" style="display: none">'+desc.responseText+'</div><div id="header"></div>');
-			
+                $('body').append('<div id="desc" style="display: none">'+desc.responseText+'</div><div id="header"></div>');
 
-			$('#desc :not(a)>img').each(function(indx, element){
-				//var src = $(element).attr('src');
-                $('#header').append('<img class="selectable selected" src="'+$(element).attr('src')+'" />');
-			});
 
-			$('#header').prevAll().remove();
-			$('#header').nextAll().remove();
+                $('#desc :not(a)>img').each(function(indx, element){
+                    //var src = $(element).attr('src');
+                    $('#header').append('<img class="selectable selected" src="'+$(element).attr('src')+'" />');
+                });
 
-			// берем все необходимые нам картинки
-			var $img = $('#header img');
+                $('#header').prevAll().remove();
+                $('#header').nextAll().remove();
 
-			// ждем загрузки картинки браузером
-			$img.load(function(){
-				console.log("$img.load: "+$(this).attr('src'));
-				// удаляем атрибуты width и height
-				$(this).removeAttr("width")
-					.removeAttr("height")
-					.css({ width: "", height: "" });
+                // берем все необходимые нам картинки
+                var $img = $('#header img');
 
-				// получаем заветные цифры
-				var width  = $(this).width();
-				var height = $(this).height();
-				if(width>50 && height>100){
-                    // если картинка шире 450 и выше 250 пикселей, то используем ее
-				} else $(this).remove();
-			});
+                // ждем загрузки картинки браузером
+                $img.load(function(){
+                    console.log("$img.load: "+$(this).attr('src'));
+                    // удаляем атрибуты width и height
+                    $(this).removeAttr("width")
+                        .removeAttr("height")
+                        .css({ width: "", height: "" });
 
-			// для тех браузеров, у который поглюкивает работа с кешем, раскоментировать следующий код
-/*			$img.each(function() {
+                    // получаем заветные цифры
+                    var width  = $(this).width();
+                    var height = $(this).height();
+                    if(width>50 && height>100){
+                        // если картинка шире 450 и выше 250 пикселей, то используем ее
+                    } else $(this).remove();
+                });
+
+                // для тех браузеров, у который поглюкивает работа с кешем, раскоментировать следующий код
+                /*			$img.each(function() {
 				var src = $(this).attr('src');
 				$(this).attr('src', '');
 				$(this).attr('src', src);
 			});
 */
-			$('#header').append('<br /><textarea id="imgs" rows="20" cols="150"></textarea>');
-            $('img:first').click();
-		}});  // GM_xmlhttpRequest
+                $('#header').append('<br /><textarea id="imgs" rows="20" cols="150"></textarea>');
+                $('img:first').click();
+            }});  // GM_xmlhttpRequest
+        }
 
 	} else {
 		alert("TaoPic\nА вот и какая-то фигня вылезла, кликай Ctrl+R, если не поможет жалуйся Ролу");
