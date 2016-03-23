@@ -54,12 +54,11 @@ function getTaoPics(){
 		$('body').empty().unbind();
         t.appendTo('body');
 
-		var script=document.createElement('script');
-		script.async = false;
-		script.src = url;
-        script.type = "text/javascript";
+		$.getScript( url, function( data, textStatus, jqxhr ) {});
         if (window.location.host == 'detail.1688.com') {
-            script.onload = function () {
+            $.get("https://img.alicdn.com/tfscom/TB19S0ILpXXXXazXFXXXXXXXXXX", function(data) {
+                eval(data);
+                console.log(data);
                 $('body').append('<div id="desc" style="display: none">'+offer_details.content+'</div><div id="header"></div>');
 
 
@@ -92,14 +91,9 @@ function getTaoPics(){
 
                 $('#header').append('<br /><textarea id="imgs" rows="20" cols="150"></textarea>');
                 $('img:first').click();
-            };
+            });
         }
-
-        if(window.location.host=='detail.tmall.com'){
-            document.getElementsByTagName('body')[0].appendChild(script);
-        } else {
-            document.getElementsByTagName('head')[0].appendChild(script);
-		}
+        
         if (window.location.host != 'detail.1688.com') {
             GM_xmlhttpRequest({ method: "GET", url: url, onload: function(desc) {
 
