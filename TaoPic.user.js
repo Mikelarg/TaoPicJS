@@ -15,7 +15,9 @@
 // ==/UserScript==
 
 function getTaoPics(){
-
+    if (typeof unasfeWindow == 'undefined') {
+      window.unsafeWindow = window;
+    } 
 	console.log("Start 'getTaoPics'");
     var url = null;
     var myregexp = /dsc\.taobaocdn\.com\/([^'|"]+)/i;
@@ -25,11 +27,10 @@ function getTaoPics(){
     } else if(window.location.host=='detail.1688.com') {
         url = $('#desc-lazyload-container').attr('data-tfs-url');
     } else {
-        var subject = $('body').html();
-        url = "http://" + myregexp.exec(subject)
+        url = unsafeWindow.g_config.descUrl;
 	}
+    console.log(url);
 	if (url != null) {
-		console.log(url);
 
         GM_addStyle("body { background: none repeat scroll 0 0 black !important }");
         GM_addStyle("#header { text-align: center; height: 100% !important; background: none repeat scroll 0 0 black !important }");
@@ -54,11 +55,9 @@ function getTaoPics(){
 		$('body').empty().unbind();
         t.appendTo('body');
 
-		$.getScript( url, function( data, textStatus, jqxhr ) {});
         if (window.location.host == 'detail.1688.com') {
-            $.get("https://img.alicdn.com/tfscom/TB19S0ILpXXXXazXFXXXXXXXXXX", function(data) {
+            $.get(url, function(data) {
                 eval(data);
-                console.log(data);
                 $('body').append('<div id="desc" style="display: none">'+offer_details.content+'</div><div id="header"></div>');
 
 
@@ -93,8 +92,8 @@ function getTaoPics(){
                 $('img:first').click();
             });
         }
-        
-        if (window.location.host != 'detail.1688.com') {
+        else if(window.location.host=='detail.tmall.com'){
+            $.getScript( url, function( data, textStatus, jqxhr ) {});
             GM_xmlhttpRequest({ method: "GET", url: url, onload: function(desc) {
 
                 $('body').append('<div id="desc" style="display: none">'+desc.responseText+'</div><div id="header"></div>');
@@ -137,6 +136,40 @@ function getTaoPics(){
                 $('#header').append('<br /><textarea id="imgs" rows="20" cols="150"></textarea>');
                 $('img:first').click();
             }});  // GM_xmlhttpRequest
+        } else {
+            console.log(1);
+                $('body').append('<div id="desc" style="display: none">'+unsafeWindow.desc+'</div><div id="header"></div>');
+
+
+                $('#desc :not(a)>img').each(function(indx, element){
+                    //var src = $(element).attr('src');
+                    $('#header').append('<img class="selectable selected" src="'+$(element).attr('src')+'" />');
+                });
+
+                $('#header').prevAll().remove();
+                $('#header').nextAll().remove();
+
+                // берем все необходимые нам картинки
+                var $img = $('#header img');
+
+                // ждем загрузки картинки браузером
+                $img.load(function(){
+                    console.log("$img.load: "+$(this).attr('src'));
+                    // удаляем атрибуты width и height
+                    $(this).removeAttr("width")
+                        .removeAttr("height")
+                        .css({ width: "", height: "" });
+
+                    // получаем заветные цифры
+                    var width  = $(this).width();
+                    var height = $(this).height();
+                    if(width>50 && height>100){
+                        // если картинка шире 450 и выше 250 пикселей, то используем ее
+                    } else $(this).remove();
+                });
+
+                $('#header').append('<br /><textarea id="imgs" rows="20" cols="150"></textarea>');
+                $('img:first').click();
         }
 
 	} else {
