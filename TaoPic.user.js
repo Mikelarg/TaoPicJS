@@ -18,6 +18,7 @@ function getTaoPics(){
     if (typeof unasfeWindow == 'undefined') {
       window.unsafeWindow = window;
     } 
+    var jQuery = unsafeWindow.jQuery;
 	console.log("Start 'getTaoPics'");
     var url = null;
     var myregexp = /dsc\.taobaocdn\.com\/([^'|"]+)/i;
@@ -57,49 +58,45 @@ function getTaoPics(){
         t.appendTo('body');
 
         if (window.location.host == 'detail.1688.com' && !taobaocdn) {
-            GM_xmlhttpRequest({
-                method: "GET",
-                url: url,
-                onload: function(response) {
-                    eval(response.responseText);
-                    console.log(offer_details.content);
-                    $('body').append('<div id="desc" style="display: none">'+offer_details.content+'</div><div id="header"></div>');
+            jQuery.getScript(url)
+            var interval = setInterval(function() {
+                var desc = unsafeWindow.desc;
+               if (typeof desc == "undefined") return;
+                console.log(desc);
+                $('body').append('<div id="desc" style="display: none">' + desc + '</div><div id="header"></div>');
 
 
-                    $('#desc :not(a)>img').each(function(indx, element){
-                        //var src = $(element).attr('src');
-                        $('#header').append('<img class="selectable selected" src="'+$(element).attr('src')+'" />');
-                    });
+                $('#desc :not(a)>img').each(function(indx, element){
+                    //var src = $(element).attr('src');
+                    $('#header').append('<img class="selectable selected" src="'+$(element).attr('src')+'" />');
+                });
 
-                    $('#header').prevAll().remove();
-                    $('#header').nextAll().remove();
+                $('#header').prevAll().remove();
+                $('#header').nextAll().remove();
 
-                    // берем все необходимые нам картинки
-                    var $img = $('#header img');
+                // берем все необходимые нам картинки
+                var $img = $('#header img');
 
-                    // ждем загрузки картинки браузером
-                    $img.load(function(){
-                        console.log("$img.load: "+$(this).attr('src'));
-                        // удаляем атрибуты width и height
-                        $(this).removeAttr("width")
-                            .removeAttr("height")
-                            .css({ width: "", height: "" });
+                // ждем загрузки картинки браузером
+                $img.load(function(){
+                    console.log("$img.load: "+$(this).attr('src'));
+                    // удаляем атрибуты width и height
+                    $(this).removeAttr("width")
+                        .removeAttr("height")
+                        .css({ width: "", height: "" });
 
-                        // получаем заветные цифры
-                        var width  = $(this).width();
-                        var height = $(this).height();
-                        if(width>50 && height>100){
-                            // если картинка шире 450 и выше 250 пикселей, то используем ее
-                        } else $(this).remove();
-                    });
+                    // получаем заветные цифры
+                    var width  = $(this).width();
+                    var height = $(this).height();
+                    if(width>50 && height>100){
+                        // если картинка шире 450 и выше 250 пикселей, то используем ее
+                    } else $(this).remove();
+                });
 
-                    $('#header').append('<br /><textarea id="imgs" rows="20" cols="150"></textarea>');
-                    $('img:first').click();
-                }
-            });
-            $.get(url, function(data) {
-
-            });
+                $('#header').append('<br /><textarea id="imgs" rows="20" cols="150"></textarea>');
+                $('img:first').click();
+                clearInterval(interval);
+            }, 1000);
         }
         else if(window.location.host=='detail.tmall.com'){
             $.getScript( url, function( data, textStatus, jqxhr ) {});
