@@ -11,7 +11,7 @@
 // @grant		GM_registerMenuCommand
 // @grant		GM_addStyle
 // @require     http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js
-// @version     0.5
+// @version     0.6
 // ==/UserScript==
 
 function getTaoPics(){
@@ -60,7 +60,12 @@ function getTaoPics(){
         if (window.location.host == 'detail.1688.com' && !taobaocdn) {
             jQuery.getScript(url);
             var interval = setInterval(function() {
-                var desc = unsafeWindow.offer_details["content"];
+                var desc;
+                if(url.indexOf("alicdn") > -1) {
+                    desc = unsafeWindow.desc;
+                } else {
+                    desc = unsafeWindow.offer_details["content"];
+                }
                if (typeof desc == "undefined") return;
                 console.log(desc);
                 $('body').append('<div id="desc" style="display: none">' + desc + '</div><div id="header"></div>');
