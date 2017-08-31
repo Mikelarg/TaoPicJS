@@ -11,7 +11,7 @@
 // @grant		GM_registerMenuCommand
 // @grant		GM_addStyle
 // @require     http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js
-// @version     0.4 альфа
+// @version     0.5
 // ==/UserScript==
 
 function getTaoPics(){
@@ -24,7 +24,7 @@ function getTaoPics(){
     var myregexp = /dsc\.taobaocdn\.com\/([^'|"]+)/i;
     if(window.location.host=='detail.tmall.com'){
         var subject = $('body').text();
-        url = "http://" + myregexp.exec(subject)
+        url = "http://" + myregexp.exec(subject);
     } else if(window.location.host=='detail.1688.com') {
         url = $('#desc-lazyload-container').attr('data-tfs-url');
     } else {
@@ -58,9 +58,9 @@ function getTaoPics(){
         t.appendTo('body');
 
         if (window.location.host == 'detail.1688.com' && !taobaocdn) {
-            jQuery.getScript(url)
+            jQuery.getScript(url);
             var interval = setInterval(function() {
-                var desc = unsafeWindow.desc;
+                var desc = unsafeWindow.offer_details["content"];
                if (typeof desc == "undefined") return;
                 console.log(desc);
                 $('body').append('<div id="desc" style="display: none">' + desc + '</div><div id="header"></div>');
@@ -192,7 +192,7 @@ function collectImgs(){
     $('#imgs').val('<img src="'+pics.join('">'+"\n"+'<img src="')+'">');
 }
 
-GM_addStyle("#gettaopics {background-color: black;color: white;font-weight: bold;padding: 5px 15px;position: fixed;right: 0;top: 0;z-index: 100000001;}");
+GM_addStyle("#gettaopics {background-color: black;color: white;font-weight: bold;padding: 5px 15px;position: fixed;right: 0;top: 0;z-index: 10000000000000001;}");
 GM_addStyle(".selectable {display: inline;opacity: 0.25;}");
 GM_addStyle(".selectable.selected {display: inline;opacity: 1.0;}");
 
