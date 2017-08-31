@@ -60,10 +60,8 @@ function getTaoPics(){
         if (window.location.host == 'detail.1688.com' && !taobaocdn) {
             jQuery.getScript(url);
             var interval = setInterval(function() {
-                var desc;
-                if(url.indexOf("alicdn") > -1) {
-                    desc = unsafeWindow.desc;
-                } else {
+                var desc = unsafeWindow.desc;
+                if(!desc) {
                     desc = unsafeWindow.offer_details["content"];
                 }
                if (typeof desc == "undefined") return;
